@@ -6,7 +6,7 @@
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
+
 
 #[derive(Debug)]
 struct Node<T> {
@@ -72,11 +72,37 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        
+        let mut merged_list = LinkedList::new();
+        
+        // Pointers to the current nodes in both lists
+        let mut a_ptr = list_a.start;
+        let mut b_ptr = list_b.start;
+        
+        // Traverse both lists and merge them
+        while a_ptr.is_some() && b_ptr.is_some() {
+            if unsafe { (*a_ptr.unwrap().as_ptr()).val } < unsafe { (*b_ptr.unwrap().as_ptr()).val } {
+                merged_list.add(unsafe { (*a_ptr.unwrap().as_ptr()).val });
+                a_ptr = unsafe { (*a_ptr.unwrap().as_ptr()).next };
+            } else {
+                merged_list.add(unsafe { (*b_ptr.unwrap().as_ptr()).val });
+                b_ptr = unsafe { (*b_ptr.unwrap().as_ptr()).next };
+            }
         }
+        
+        // Append the remaining nodes from list_a, if any
+        while a_ptr.is_some() {
+            merged_list.add(unsafe { (*a_ptr.unwrap().as_ptr()).val });
+            a_ptr = unsafe { (*a_ptr.unwrap().as_ptr()).next };
+        }
+
+        // Append the remaining nodes from list_b, if any
+        while b_ptr.is_some() {
+            merged_list.add(unsafe { (*b_ptr.unwrap().as_ptr()).val });
+            b_ptr = unsafe { (*b_ptr.unwrap().as_ptr()).next };
+        }
+
+        merged_list
 	}
 }
 
