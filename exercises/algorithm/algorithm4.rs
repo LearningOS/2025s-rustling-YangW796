@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -48,16 +47,54 @@ where
         BinarySearchTree { root: None }
     }
 
-    // Insert a value into the BST
-    fn insert(&mut self, value: T) {
-        
-        //TODO
+    pub fn insert(&mut self, value: T) {
+        match self.root {
+            None => {
+                self.root = Some(Box::new(TreeNode::new(value)));
+            }
+            Some(ref mut node) => {
+                Self::insert_recursive(node, value);
+            }
+        }
     }
 
-    // Search for a value in the BST
-    fn search(&self, value: T) -> bool {
-        //TODO
-        true
+    fn insert_recursive(node: &mut Box<TreeNode<T>>, value: T) {
+        match value.cmp(&node.value) {
+            Ordering::Less => {
+                if let Some(ref mut left_node) = node.left {
+                    Self::insert_recursive(left_node, value);
+                } else {
+                    node.left = Some(Box::new(TreeNode::new(value)));
+                }
+            }
+            Ordering::Greater => {
+                if let Some(ref mut right_node) = node.right {
+                    Self::insert_recursive(right_node, value);
+                } else {
+                    node.right = Some(Box::new(TreeNode::new(value)));
+                }
+            }
+            Ordering::Equal => {
+                // Handle duplicates if needed
+            }
+        }
+    }
+
+    pub fn search(&self, value: T) -> bool {
+        Self::search_recursive(&self.root, value)
+    }
+
+    fn search_recursive(node: &Option<Box<TreeNode<T>>>, value: T) -> bool {
+        match node {
+            None => false,
+            Some(ref node) => {
+                match value.cmp(&node.value) {
+                    Ordering::Less => Self::search_recursive(&node.left, value),
+                    Ordering::Greater => Self::search_recursive(&node.right, value),
+                    Ordering::Equal => true,
+                }
+            }
+        }
     }
 }
 

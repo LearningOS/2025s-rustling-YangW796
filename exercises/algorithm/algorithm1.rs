@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -29,13 +28,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: PartialOrd+Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: PartialOrd+Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -71,38 +70,32 @@ impl<T> LinkedList<T> {
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
-		//TODO
-        
-        let mut merged_list = LinkedList::new();
-        
-        // Pointers to the current nodes in both lists
-        let mut a_ptr = list_a.start;
-        let mut b_ptr = list_b.start;
-        
-        // Traverse both lists and merge them
-        while a_ptr.is_some() && b_ptr.is_some() {
-            if unsafe { (*a_ptr.unwrap().as_ptr()).val } < unsafe { (*b_ptr.unwrap().as_ptr()).val } {
-                merged_list.add(unsafe { (*a_ptr.unwrap().as_ptr()).val });
-                a_ptr = unsafe { (*a_ptr.unwrap().as_ptr()).next };
-            } else {
-                merged_list.add(unsafe { (*b_ptr.unwrap().as_ptr()).val });
-                b_ptr = unsafe { (*b_ptr.unwrap().as_ptr()).next };
+		let mut merged_list = LinkedList::new();
+        let mut a_current = list_a.start;
+        let mut b_current = list_b.start;
+
+        while a_current.is_some() || b_current.is_some() {
+            let a_val = a_current.map(|ptr| unsafe { &(*ptr.as_ptr()).val });
+            let b_val = b_current.map(|ptr| unsafe { &(*ptr.as_ptr()).val });
+
+            if a_val.is_some() && (b_val.is_none() || a_val <= b_val) {
+                if let Some(ptr) = a_current {
+                    let val = unsafe { &(*ptr.as_ptr()).val }.clone();
+                    merged_list.add(val);
+                    a_current = unsafe { (*ptr.as_ptr()).next };
+                }
+            } else if b_val.is_some() {
+                if let Some(ptr) = b_current {
+                    let val = unsafe { &(*ptr.as_ptr()).val }.clone();
+                    merged_list.add(val);
+                    b_current = unsafe { (*ptr.as_ptr()).next };
+                }
             }
         }
-        
-        // Append the remaining nodes from list_a, if any
-        while a_ptr.is_some() {
-            merged_list.add(unsafe { (*a_ptr.unwrap().as_ptr()).val });
-            a_ptr = unsafe { (*a_ptr.unwrap().as_ptr()).next };
-        }
-
-        // Append the remaining nodes from list_b, if any
-        while b_ptr.is_some() {
-            merged_list.add(unsafe { (*b_ptr.unwrap().as_ptr()).val });
-            b_ptr = unsafe { (*b_ptr.unwrap().as_ptr()).next };
-        }
-
         merged_list
+
+        
+     
 	}
 }
 
